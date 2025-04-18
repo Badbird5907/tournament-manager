@@ -49,4 +49,3 @@ export const matches = pgTable("matches", {
   tournamentId: uuid("tournament_id").references(() => tournaments.id),
   
 });
-
