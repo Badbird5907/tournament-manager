@@ -1,30 +1,15 @@
-import {type NextRequest, NextResponse} from "next/server";
-import {verifyToken} from "@/util/auth-server";
-
-export async function middleware(request: NextRequest) {
-    const url = request.nextUrl.clone();
-    // if we are on /admin
-    if (request.nextUrl.pathname.startsWith("/admin")) {
-        // get the qrTrackerToken cookie
-        const tmPassword = request.cookies.get("tmPassword");
-        if (!tmPassword || !verifyToken(tmPassword.value)) {
-            url.pathname = "/";
-            return NextResponse.redirect(url);
-        }
-    } else if (request.nextUrl.pathname.startsWith("/api/admin")) {
-        const tmPassword = request.cookies.get("tmPassword");
-        if (!tmPassword || !verifyToken(tmPassword.value)) { // if the token is invalid
-            // return 401
-            const response = new Response(JSON.stringify({
-                success: false,
-                message: "Unauthorized",
-                code: 401
-            }), {
-                status: 401,
-            });
-            response.headers.set("Content-Type", "application/json");
-            return response;
-        }
+import { auth } from "@/app/auth/actions";
+import { type NextRequest, NextResponse } from "next/server";
+export default async function middleware(request: NextRequest) {
+  const subject = await auth();
+  const head = new Headers(request.headers);
+  head.delete("__auth"); // don't let the client set the subject
+  if (subject) {
+    head.set("__auth", JSON.stringify(subject.properties));
+  }
+  return NextResponse.next({
+    request: {
+      headers: head
     }
-    return NextResponse.next();
+  });
 }

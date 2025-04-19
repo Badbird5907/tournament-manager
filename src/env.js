@@ -12,8 +12,8 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    SUPABASE_SERVICE_ROLE: z.string().optional(),
-    PASSWORD: z.string(),
+    OPENAUTH_CLIENT_ID: z.string(),
+    OPENAUTH_ISSUER: z.string().url(),
   },
 
   /**
@@ -22,7 +22,6 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
   },
 
   /**
@@ -33,9 +32,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE: process.env.SUPABASE_SERVICE_ROLE,
-    PASSWORD: process.env.PASSWORD,
+    OPENAUTH_CLIENT_ID: process.env.OPENAUTH_CLIENT_ID,
+    OPENAUTH_ISSUER: process.env.OPENAUTH_ISSUER,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

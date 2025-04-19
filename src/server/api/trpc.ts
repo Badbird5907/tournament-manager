@@ -11,8 +11,8 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
-import { verifyToken } from "@/util/auth-server";
 import { cookies } from "next/headers";
+import { auth } from "@/app/auth/actions";
 
 /**
  * 1. CONTEXT
@@ -108,9 +108,8 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 export const publicProcedure = t.procedure.use(timingMiddleware);
 
 const authMiddleware = t.middleware(async ({ next }) => {
-  const c = await cookies();
-  const tmPassword = c.get("tmPassword");
-  if (!tmPassword?.value || !verifyToken(tmPassword.value)) {
+  const subject = await auth();
+  if (!subject || !subject.properties) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "You are not authorized to access this resource."

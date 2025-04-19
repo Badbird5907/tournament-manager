@@ -11,37 +11,27 @@ import { index, integer, pgEnum, pgTable, pgTableCreator, serial, text, timestam
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
 export const createTable = pgTableCreator(
-  (name) => name//`tournament-manager_${name}`,
+  (name) => `tournament-manager_${name}`,
 );
 
 export const pgBracketType = pgEnum("bracket_type", [
   "single_elimination",
   "double_elimination",
 ]);
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  name: text("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
 export const tournaments = pgTable("tournaments", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   endDate: timestamp("end_date"), // Optional end date
-  bracketType: pgBracketType("bracket_type").notNull()
-});
-
-export const organizations = pgTable("organizations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  tournamentId: uuid("tournament_id").references(() => tournaments.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const team = pgTable("team", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  organizationId: uuid("organization_id").references(() => organizations.id),
-  tournamentId: uuid("tournament_id").references(() => tournaments.id),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  bracketType: pgBracketType("bracket_type").notNull(),
+  staff: uuid("staff").array().references(() => users.id),
 });
 
 export const matches = pgTable("matches", {

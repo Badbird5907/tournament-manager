@@ -5,6 +5,9 @@ import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "next-themes";
+import { SubjectProvider } from "@/components/hooks/user";
+import { headers } from "next/headers";
+import type { Subject } from "@badbird5907/auth-commons";
 
 export const metadata: Metadata = {
   title: "Tournament Manager",
@@ -17,17 +20,22 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const head = await headers();
+  const h = head.get("__auth");
+  const subject = h ? JSON.parse(h) as Subject : null;
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <body>
         <TRPCReactProvider>
           <ThemeProvider forcedTheme="dark" attribute={"class"}>
-            <main className="min-h-screen">
-              {children}
-            </main>
+            <SubjectProvider value={subject}>
+              <main className="min-h-screen">
+                {children}
+              </main>
+            </SubjectProvider>
           </ThemeProvider>
         </TRPCReactProvider>
       </body>
