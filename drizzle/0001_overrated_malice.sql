@@ -1,0 +1,2 @@
+ALTER TABLE "tournament-manager_users" ALTER COLUMN "id" DROP DEFAULT;--> statement-breakpoint
+ALTER TABLE "tournament-manager_users" ADD CONSTRAINT "tournament-manager_users_id_core_users_id_fk" FOREIGN KEY ("id") REFERENCES "public"."core_users"("id") ON DELETE no action ON UPDATE no action;

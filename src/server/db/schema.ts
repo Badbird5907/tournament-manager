@@ -1,6 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
+import { coreUsers } from "@badbird5907/db/schema";
 import { sql } from "drizzle-orm";
 import { index, integer, pgEnum, pgTable, pgTableCreator, serial, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 
@@ -10,32 +11,42 @@ import { index, integer, pgEnum, pgTable, pgTableCreator, serial, text, timestam
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
+const prefix = "tournament-manager_";
 export const createTable = pgTableCreator(
-  (name) => `tournament-manager_${name}`,
+  (name: string) => `${prefix}${name}`,
 );
 
-export const pgBracketType = pgEnum("bracket_type", [
+export const pgBracketType = pgEnum(`${prefix}bracket_type`, [
   "single_elimination",
   "double_elimination",
 ]);
-export const users = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
+export const users = createTable("users", {
+  id: uuid("id").primaryKey().references(() => coreUsers.id, { onDelete: "cascade" }),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-export const tournaments = pgTable("tournaments", {
+export const tournaments = createTable("tournaments", {
   id: uuid("id").primaryKey().defaultRandom(),
   slug: text("slug").notNull().unique(),
   name: text("name").notNull(),
   endDate: timestamp("end_date"), // Optional end date
   bracketType: pgBracketType("bracket_type").notNull(),
-  staff: uuid("staff").array().references(() => users.id),
+  owner: uuid("owner").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-export const matches = pgTable("matches", {
+// Junction table for tournament staff (many-to-many relationship)
+export const tournamentStaff = createTable("tournament_staff", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  tournamentId: uuid("tournament_id").references(() => tournaments.id).notNull(),
+  userId: uuid("user_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const matches = createTable("matches", {
   id: uuid("id").primaryKey().defaultRandom(),
   tournamentId: uuid("tournament_id").references(() => tournaments.id),
-  
 });

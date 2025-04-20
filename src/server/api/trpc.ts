@@ -11,7 +11,6 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "@/server/db";
-import { cookies } from "next/headers";
 import { auth } from "@/app/auth/actions";
 
 /**
@@ -112,10 +111,23 @@ const authMiddleware = t.middleware(async ({ next }) => {
   if (!subject || !subject.properties) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
-      message: "You are not authorized to access this resource."
+      message: "You are not authorized to access this resource. (1)"
     })
   }
-  return next();
+  const user = await db.query.users.findFirst({
+    where: (user, { eq }) => eq(user.id, subject.properties.id),
+  });
+  if (!user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You are not authorized to access this resource. (2)"
+    })
+  }
+  return next({
+    ctx: {
+      user,
+    },
+  });
 });
 
 export const protectedProcedure = publicProcedure.use(authMiddleware);

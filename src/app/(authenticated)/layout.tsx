@@ -1,8 +1,6 @@
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
-import { auth } from "@/app/auth/actions"
 import { redirect } from "next/navigation";
-import { SubjectProvider } from "@/components/hooks/user";
 import { headers } from "next/headers";
 import type { Subject } from "@badbird5907/auth-commons";
 import Navbar from "@/components/navbar";
