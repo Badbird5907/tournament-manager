@@ -1,9 +1,15 @@
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure, tournamentPublicProcedure, tournamentStaffProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { z } from "zod";
-import { tournaments, tournamentStaff } from "@/server/db/schema";
+import { matches, tournamentStaff, matchParticipants, tournamentAttendees, tournaments } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+
+type MatchWithParticipants = typeof matches.$inferSelect & {
+  participants: (typeof matchParticipants.$inferSelect & {
+    tournamentAttendee: typeof tournamentAttendees.$inferSelect;
+  })[];
+};
 
 const tournamentRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -28,7 +34,7 @@ const tournamentRouter = createTRPCRouter({
     return userTournaments;
   }),
   
-  get: protectedProcedure
+  getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .query(async ({ ctx, input }) => {
       const { user } = ctx;
@@ -91,6 +97,24 @@ const tournamentRouter = createTRPCRouter({
       }).returning();
       
       return newTournament[0];
+    }),
+    getBracket: tournamentPublicProcedure
+    .input(z.object({
+      stageId: z.string().uuid(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { tournament } = ctx;
+      const { stageId } = input;
+      const matches = await db.query.matches.findMany({
+        where: (matches, { eq, and }) => (
+          and(
+            eq(matches.stageId, stageId),
+            eq(matches.tournamentId, tournament.id)
+          )
+        ),
+        orderBy: (matches, { asc }) => [asc(matches.round), asc(matches.matchNumber)],
+      })
+      return matches;
     }),
 });
 

@@ -23,6 +23,7 @@
     "@badbird5907/auth-commons": "^0.0.3",
     "@badbird5907/db": "0.0.3",
     "@formkit/auto-animate": "^0.8.2",
+    "@g-loot/react-tournament-brackets": "1.0.31-rc",
     "@hookform/resolvers": "^5.0.1",
     "@openauthjs/openauth": "^0.4.3",
     "@radix-ui/react-checkbox": "^1.2.2",

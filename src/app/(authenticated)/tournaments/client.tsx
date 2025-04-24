@@ -2,22 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
+import { capitalizeDeep } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import type { Tournament } from "@/types";
 import type { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 
-/*
-
-export const tournaments = createTable("tournaments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  slug: text("slug").notNull().unique(),
-  name: text("name").notNull(),
-  endDate: timestamp("end_date"), // Optional end date
-  bracketType: pgBracketType("bracket_type").notNull(),
-  owner: uuid("owner").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});*/
 const columns: ColumnDef<Tournament>[] = [
   {
     header: "Name",
@@ -28,20 +18,36 @@ const columns: ColumnDef<Tournament>[] = [
     accessorKey: "slug",
   },
   {
-    header: "Owner",
-    accessorKey: "owner",
-  },
-  {
-    header: "Created At",
+    header: "Created",
     accessorKey: "createdAt",
+    cell: ({ row }) => {
+      const tournament = row.original;
+      return (
+        <div>{new Date(tournament.createdAt).toLocaleDateString()}</div>
+      )
+    }
   },
   {
-    header: "Updated At",
+    header: "Last Updated",
     accessorKey: "updatedAt",
+    cell: ({ row }) => {
+      const tournament = row.original;
+      const date = new Date(tournament.updatedAt);
+      return (
+        <div>{date.toLocaleDateString() + " " + date.toLocaleTimeString()}</div>
+      )
+    }
   },
   {
     header: "Bracket Type",
     accessorKey: "bracketType",
+    cell: ({ row }) => {
+      const tournament = row.original;
+      const { bracketType } = tournament;
+      return (
+        <div>{capitalizeDeep(bracketType.replace("_", " "))}</div>
+      )
+    }
   },
   {
     header: "End Date",
@@ -62,7 +68,9 @@ const columns: ColumnDef<Tournament>[] = [
       const tournament = row.original;
       return (
         <div>
-          <Button>Edit</Button>
+          <Link href={`/tournaments/${tournament.id}`}>
+            <Button>Edit</Button>
+          </Link>
         </div>
       )
     }

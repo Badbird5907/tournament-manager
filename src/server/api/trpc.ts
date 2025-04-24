@@ -8,7 +8,7 @@
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 import { db } from "@/server/db";
 import { auth } from "@/app/auth/actions";
@@ -131,3 +131,53 @@ const authMiddleware = t.middleware(async ({ next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(authMiddleware);
+export const tournamentPublicProcedure = publicProcedure.input(z.object({
+  tournamentId: z.string().uuid(),
+})).use(async ({ input, next }) => {
+  const { tournamentId } = input;
+  const tournament = await db.query.tournaments.findFirst({
+    where: (tournament, { eq }) => eq(tournament.id, tournamentId),
+  });
+  if (!tournament) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Tournament not found",
+    });
+  }
+  return next({
+    ctx: {
+      tournament,
+    },
+  });
+});
+export const tournamentStaffProcedure = protectedProcedure.input(z.object({
+  tournamentId: z.string().uuid(),
+})).use(async ({ ctx, input, next }) => {
+  const { tournamentId } = input;
+  const tournament = await db.query.tournaments.findFirst({
+    where: (tournament, { eq }) => eq(tournament.id, tournamentId),
+  });
+  if (!tournament) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Tournament not found",
+    });
+  }
+  
+  if (tournament.owner !== ctx.user.id) {
+    const isStaff = await db.query.tournamentStaff.findFirst({
+      where: (staff, { eq, and }) => and(eq(staff.tournamentId, tournamentId), eq(staff.userId, ctx.user.id)),
+    });
+    if (!isStaff) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "You are not authorized to access this resource.",
+      });
+    }
+  }
+  return next({
+    ctx: {
+      tournament,
+    },
+  });
+});

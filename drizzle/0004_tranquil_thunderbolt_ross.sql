@@ -1,0 +1,6 @@
+ALTER TABLE "tournament-manager_matches" ALTER COLUMN "tournament_id" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "tournament-manager_matches" ALTER COLUMN "stage_id" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "tournament-manager_tournament_attendees" ALTER COLUMN "tournament_id" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "tournament-manager_tournament_stages" ALTER COLUMN "tournament_id" SET NOT NULL;--> statement-breakpoint
+ALTER TABLE "tournament-manager_matches" ADD CONSTRAINT "tournament-manager_matches_next_match_id_tournament-manager_matches_id_fk" FOREIGN KEY ("next_match_id") REFERENCES "public"."tournament-manager_matches"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "tournament-manager_matches" ADD CONSTRAINT "tournament-manager_matches_next_loser_match_id_tournament-manager_matches_id_fk" FOREIGN KEY ("next_loser_match_id") REFERENCES "public"."tournament-manager_matches"("id") ON DELETE no action ON UPDATE no action;
