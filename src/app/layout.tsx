@@ -8,6 +8,7 @@ import { ThemeProvider } from "next-themes";
 import { SubjectProvider } from "@/components/hooks/user";
 import { headers } from "next/headers";
 import type { Subject } from "@badbird5907/auth-commons";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Tournament Manager",
@@ -34,6 +35,7 @@ export default async function RootLayout({
             <SubjectProvider value={subject}>
               <main className="min-h-screen">
                 {children}
+                <Toaster />
               </main>
             </SubjectProvider>
           </ThemeProvider>

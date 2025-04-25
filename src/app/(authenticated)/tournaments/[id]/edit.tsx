@@ -11,12 +11,11 @@ import { Input } from "@/components/ui/input";
 import type { TRPCError } from "@trpc/server";
 import { Button } from "@/components/ui/button";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { useMemo, useState } from "react";
-import type { DateRange } from "react-day-picker";
+import { useMemo } from "react";
 
 export const EditTournamentBasic = ({ id }: { id: string }) => {
   const utils = api.useUtils();
-  const { data: tournament } = api.tournaments.getById.useQuery({ id });
+  const { data: { tournament } = {} } = api.tournaments.getById.useQuery({ id });
   const updateTournament = api.tournaments.update.useMutation({
     onSuccess: async () => {
       await utils.tournaments.getById.invalidate({ id });
@@ -27,11 +26,14 @@ export const EditTournamentBasic = ({ id }: { id: string }) => {
     defaultValues: {
       name: tournament?.name,
       slug: tournament?.slug,
+      startDate: tournament?.startDate ? new Date(tournament.startDate) : undefined,
+      endDate: tournament?.endDate ? new Date(tournament.endDate) : undefined,
     },
   });
   const onSubmit = (data: z.infer<typeof updateTournamentBasicFormSchema>) => {
     console.log(data);
     if (!tournament?.id) {
+      console.error("Tournament not found");
       return;
     }
     updateTournament.mutateAsync({
@@ -59,35 +61,45 @@ export const EditTournamentBasic = ({ id }: { id: string }) => {
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            <DatePickerWithRange defaultDate={defaultDate} onSelect={(range) => {
-              console.log(range);
-            }} />
-            <Button type="submit">Save</Button>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="flex flex-row gap-4 w-full">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="py-4 space-y-2">
+              <FormLabel>Date Range</FormLabel>
+              <DatePickerWithRange className="w-full" defaultDate={defaultDate} onRangeSelect={(range) => {
+                if (range?.from) {
+                  form.setValue("startDate", range.from, { shouldValidate: true });
+                }
+                if (range?.to) {
+                  form.setValue("endDate", range.to, { shouldValidate: true });
+                }
+              }} />
+            </div>
+            <Button type="submit" className="w-full" loading={updateTournament.isPending}>Save</Button>
           </form>
         </Form>
       </CardContent>

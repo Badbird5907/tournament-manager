@@ -35,18 +35,25 @@ const tournamentRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const { id } = input;
       
-      const tournament = await db.query.tournaments.findFirst({
-        where: (t, { eq }) => eq(t.id, id)
-      });
+      const [tournament, stages] = await Promise.all([
+        db.query.tournaments.findFirst({
+          where: (t, { eq }) => eq(t.id, id)
+        }),
+        db.query.tournamentStages.findMany({
+          where: (s, { eq }) => eq(s.tournamentId, id)
+        })
+      ]);
       
       if (!tournament) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Tournament not found",
         });
-      }
-      console.log(tournament);
-      return tournament;
+      }      
+      return {
+        tournament,
+        stages,
+      };
     }),
     
   create: protectedProcedure

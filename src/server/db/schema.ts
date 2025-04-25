@@ -3,8 +3,8 @@
 
 import { matchParticipantStatusEnum, matchStatusEnum } from "@/types";
 import { coreUsers } from "@badbird5907/db/schema";
-import { relations, sql } from "drizzle-orm";
-import { index, integer, jsonb, pgEnum, pgTable, pgTableCreator, serial, text, timestamp, uuid, varchar, boolean, type AnyPgColumn } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { integer, jsonb, pgEnum, pgTableCreator, text, timestamp, uuid, boolean, type AnyPgColumn } from "drizzle-orm/pg-core";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
