@@ -1,0 +1,1 @@
+ALTER TABLE "tournament-manager_tournament_stages" ALTER COLUMN "bracket_type" DROP NOT NULL;

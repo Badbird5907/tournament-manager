@@ -4,6 +4,7 @@ import { login, logout } from "@/app/auth/actions";
 import { useSession } from "@/components/hooks/user";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -29,9 +30,14 @@ export default function Navbar({ admin }: { admin?: boolean }) {
     <nav className="border-b-2 border-gray-200 dark:border-gray-800 border-dashed sticky top-0 z-50 backdrop-blur-md bg-background/80">
       <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex flex-row gap-4">
+            {admin && (
+              <SidebarTrigger />
+            )}
             <Link href="/">
-              <p className="text-2xl font-bold">Tournament Manager</p>
+              <p className="text-2xl font-bold">
+                Tournament Manager
+              </p>
             </Link>
           </div>
 

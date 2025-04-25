@@ -39,17 +39,6 @@ const columns: ColumnDef<Tournament>[] = [
     }
   },
   {
-    header: "Bracket Type",
-    accessorKey: "bracketType",
-    cell: ({ row }) => {
-      const tournament = row.original;
-      const { bracketType } = tournament;
-      return (
-        <div>{capitalizeDeep(bracketType.replace("_", " "))}</div>
-      )
-    }
-  },
-  {
     header: "End Date",
     accessorKey: "endDate",
     cell: ({ row }) => {

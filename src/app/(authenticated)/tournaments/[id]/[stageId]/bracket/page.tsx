@@ -3,8 +3,6 @@ import { TournamentBracketClient } from "@/app/(authenticated)/tournaments/[id]/
 export default async function TournamentBracketPage({ params }: { params: Promise<{ id: string; stageId: string }> }) {
   const { id, stageId } = await params;
   return (
-    <div>
-      <TournamentBracketClient id={id} stageId={stageId} />
-    </div>
+    <TournamentBracketClient id={id} stageId={stageId} />
   );
 }

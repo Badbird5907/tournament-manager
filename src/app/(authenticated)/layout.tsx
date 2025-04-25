@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import type { Subject } from "@badbird5907/auth-commons";
 import Navbar from "@/components/navbar";
+import { ContentSizeProvider } from "@/components/hooks/content-size";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const head = await headers();
@@ -18,7 +19,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       <AppSidebar />
       <main className="bg-background min-h-screen w-full">
         <Navbar admin={true} />
-        <div className="p-4">
+        <div className="w-full h-full">
           {children}
         </div>
       </main>

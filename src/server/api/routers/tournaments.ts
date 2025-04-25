@@ -1,15 +1,11 @@
-import { createTRPCRouter, protectedProcedure, publicProcedure, tournamentPublicProcedure, tournamentStaffProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, tournamentPublicProcedure, tournamentStaffProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { z } from "zod";
-import { matches, tournamentStaff, matchParticipants, tournamentAttendees, tournaments } from "@/server/db/schema";
+import { tournamentStaff, tournamentStages, tournaments } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-
-type MatchWithParticipants = typeof matches.$inferSelect & {
-  participants: (typeof matchParticipants.$inferSelect & {
-    tournamentAttendee: typeof tournamentAttendees.$inferSelect;
-  })[];
-};
+import { generateDoubleEliminationBracket, generateSingleEliminationBracket } from "@/lib/bracket";
+import { updateTournamentBasicFormSchema } from "@/types/forms/tournament";
 
 const tournamentRouter = createTRPCRouter({
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -36,12 +32,11 @@ const tournamentRouter = createTRPCRouter({
   
   getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
-    .query(async ({ ctx, input }) => {
-      const { user } = ctx;
+    .query(async ({ input }) => {
       const { id } = input;
       
       const tournament = await db.query.tournaments.findFirst({
-        where: eq(tournaments.id, id),
+        where: (t, { eq }) => eq(t.id, id)
       });
       
       if (!tournament) {
@@ -50,20 +45,7 @@ const tournamentRouter = createTRPCRouter({
           message: "Tournament not found",
         });
       }
-      
-      const isOwner = tournament.owner === user.id;
-      const isStaff = await db.query.tournamentStaff.findFirst({
-        where: (staff) => 
-          eq(staff.tournamentId, id) && eq(staff.userId, user.id),
-      });
-      
-      if (!isOwner && !isStaff) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "You don't have permission to access this tournament",
-        });
-      }
-      
+      console.log(tournament);
       return tournament;
     }),
     
@@ -91,12 +73,27 @@ const tournamentRouter = createTRPCRouter({
       const newTournament = await db.insert(tournaments).values({
         name: input.name,
         slug: input.slug,
-        bracketType: input.bracketType,
         owner: user.id,
         endDate: input.endDate,
       }).returning();
       
-      return newTournament[0];
+      if (!newTournament[0]) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create tournament",
+        });
+      }
+      
+      const newStage = await db.insert(tournamentStages).values({
+        tournamentId: newTournament[0].id,
+        name: "Default",
+        bracketType: input.bracketType,
+      }).returning();
+
+      return {
+        tournament: newTournament[0],
+        stage: newStage[0],
+      };
     }),
     getBracket: tournamentPublicProcedure
     .input(z.object({
@@ -105,6 +102,15 @@ const tournamentRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { tournament } = ctx;
       const { stageId } = input;
+      const stage = await db.query.tournamentStages.findFirst({
+        where: (stages, { eq }) => eq(stages.id, stageId),
+      });
+      if (!stage) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Stage not found",
+        });
+      }
       const matches = await db.query.matches.findMany({
         where: (matches, { eq, and }) => (
           and(
@@ -112,9 +118,48 @@ const tournamentRouter = createTRPCRouter({
             eq(matches.tournamentId, tournament.id)
           )
         ),
+        with: {
+          winner: true,
+          participants: {
+            with: {
+              attendee: true
+            }
+          }
+        },
         orderBy: (matches, { asc }) => [asc(matches.round), asc(matches.matchNumber)],
-      })
-      return matches;
+      });
+      const { bracketType } = stage;
+      if (bracketType === "single_elimination") {
+        return generateSingleEliminationBracket(matches, stage);
+      } else if (bracketType === "double_elimination") {
+        return generateDoubleEliminationBracket(matches, stage);
+      } else {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Invalid bracket type ${(bracketType as unknown as string) ?? "<unknown>"}`,
+        });
+      }
+    }),
+    update: tournamentStaffProcedure
+    .input(updateTournamentBasicFormSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { tournament } = ctx;
+      // check slug is changed
+      if (input.slug !== tournament.slug) {
+        const existingTournament = await db.query.tournaments.findFirst({
+          where: eq(tournaments.slug, input.slug),
+        });
+        if (existingTournament) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "A tournament with this slug already exists",
+          });
+        }
+      }
+      const updatedTournament = await db.update(tournaments).set({
+        ...input,
+      }).where(eq(tournaments.id, tournament.id)).returning();
+      return updatedTournament[0];
     }),
 });
 

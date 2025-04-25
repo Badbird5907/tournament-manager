@@ -1,0 +1,2 @@
+ALTER TABLE "tournament-manager_tournament_stages" ADD COLUMN "bracket_type" "tournament-manager_bracket_type" NOT NULL;--> statement-breakpoint
+ALTER TABLE "tournament-manager_tournaments" DROP COLUMN "bracket_type";

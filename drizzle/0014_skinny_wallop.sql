@@ -1,0 +1,1 @@
+ALTER TABLE "tournament-manager_tournaments" ADD COLUMN "start_date" timestamp;

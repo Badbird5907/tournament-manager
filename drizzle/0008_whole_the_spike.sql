@@ -1,0 +1,1 @@
+ALTER TABLE "tournament-manager_tournament_stages" ADD COLUMN "match_number_prefix" text DEFAULT 'Q';
