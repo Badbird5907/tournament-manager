@@ -1,6 +1,7 @@
 "use client";
 
 import { EditTournamentBasic } from "@/app/(authenticated)/tournaments/[id]/edit";
+import { StageList } from "@/app/(authenticated)/tournaments/[id]/stages";
 import { api } from "@/trpc/react";
 
 export const TournamentPageClient = ({ id }: { id: string }) => {
@@ -12,6 +13,7 @@ export const TournamentPageClient = ({ id }: { id: string }) => {
       </div>
       <div className="grid grid-flow-row md:grid-flow-col grid-cols-1 md:grid-cols-2 gap-4">
         <EditTournamentBasic id={id} />
+        <StageList id={id} />
       </div>
     </div>
   );

@@ -69,7 +69,7 @@ const columns: ColumnDef<Tournament>[] = [
 export default function TournamentsClient() {
   const { data, isLoading } = api.tournaments.getAll.useQuery();
   return (
-    <div>
+    <div className="px-4">
       <DataTable
         columns={columns}
         loading={isLoading}

@@ -68,6 +68,7 @@ const Button = React.memo(
         element,
         loadingText = "Loading...",
         disableLoadingText,
+        onClickLoading,
         loading,
         ...props
       },
@@ -96,9 +97,9 @@ const Button = React.memo(
       const onClick = (
         event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
       ) => {
-        if (props.onClickLoading) {
+        if (onClickLoading) {
           setLoading(true);
-          const promise = props.onClickLoading(event);
+          const promise = onClickLoading(event);
           if (promise instanceof Promise) {
             // sanity check
             void promise.finally(() => setLoading(false));

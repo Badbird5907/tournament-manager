@@ -5,9 +5,7 @@ export default async function TournamentPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   await api.tournaments.getById.prefetch({ id });
   return (
-    <HydrateClient>
-      <TournamentPageClient id={id} />
-    </HydrateClient>
+    <TournamentPageClient id={id} />
   )
 }
 

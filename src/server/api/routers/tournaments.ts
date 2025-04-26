@@ -1,10 +1,10 @@
 import { createTRPCRouter, protectedProcedure, tournamentPublicProcedure, tournamentStaffProcedure } from "@/server/api/trpc";
 import { db } from "@/server/db";
 import { z } from "zod";
-import { tournamentStaff, tournamentStages, tournaments } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { tournamentAttendees, tournamentStaff, tournamentStages, tournaments } from "@/server/db/schema";
+import { and, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
-import { generateDoubleEliminationBracket, generateSingleEliminationBracket } from "@/lib/bracket";
+import { buildDoubleEliminationBracket, buildSingleEliminationBracket, generateSingleEliminationBracket } from "@/lib/bracket";
 import { updateTournamentBasicFormSchema } from "@/types/forms/tournament";
 
 const tournamentRouter = createTRPCRouter({
@@ -137,9 +137,9 @@ const tournamentRouter = createTRPCRouter({
       });
       const { bracketType } = stage;
       if (bracketType === "single_elimination") {
-        return generateSingleEliminationBracket(matches, stage);
+        return buildSingleEliminationBracket(matches, stage);
       } else if (bracketType === "double_elimination") {
-        return generateDoubleEliminationBracket(matches, stage);
+        return buildDoubleEliminationBracket(matches, stage);
       } else {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
@@ -167,6 +167,61 @@ const tournamentRouter = createTRPCRouter({
         ...input,
       }).where(eq(tournaments.id, tournament.id)).returning();
       return updatedTournament[0];
+    }),
+    getParticipants: tournamentStaffProcedure
+    .input(z.object({
+      tournamentId: z.string().uuid(),
+    }))
+    .query(async ({ input }) => {
+      const { tournamentId } = input;
+      const participants = await db.query.tournamentAttendees.findMany({
+        where: (participants, { eq }) => eq(participants.tournamentId, tournamentId),
+      });
+      return participants;
+    }),
+    removeParticipant: tournamentStaffProcedure
+    .input(z.object({
+      tournamentId: z.string().uuid(),
+      participantId: z.string().uuid(),
+    }))
+    .mutation(async ({ input }) => {
+      const { tournamentId, participantId } = input;
+      await db.delete(tournamentAttendees).where(and(eq(tournamentAttendees.tournamentId, tournamentId), eq(tournamentAttendees.id, participantId)));
+    }),
+    addParticipant: tournamentStaffProcedure
+    .input(z.object({
+      displayName: z.string().min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const { tournamentId, displayName } = input;
+      await db.insert(tournamentAttendees).values({
+        tournamentId,
+        displayName,
+      });
+    }),
+    bulkAddParticipants: tournamentStaffProcedure
+    .input(z.object({
+      tournamentId: z.string().uuid(),
+      displayNames: z.array(z.string().min(1)),
+    }))
+    .mutation(async ({ input }) => {
+      const { tournamentId, displayNames } = input;
+      await db.insert(tournamentAttendees).values(displayNames.map((displayName) => ({
+        tournamentId,
+        displayName,
+      })));
+    }),
+    generateBracket: tournamentStaffProcedure
+    .input(z.object({
+      tournamentId: z.string().uuid(),
+      participants: z.string().uuid().array(),
+    }))
+    .mutation(async ({ input }) => {
+      const { tournamentId, participants: participantIds } = input;
+      const allParticipants = await db.query.tournamentAttendees.findMany({
+        where: (participants, { inArray }) => inArray(participants.id, participantIds),
+      });
+      const matches = generateSingleEliminationBracket(allParticipants, tournamentId);
     }),
 });
 

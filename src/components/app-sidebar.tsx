@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar, Home, Inbox, Search, Settings, Users } from "lucide-react"
 
 import {
@@ -10,27 +12,31 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { api } from "@/trpc/react";
+import { useMemo } from "react";
 
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "Teams",
-    url: "/teams",
-    icon: Users,
-  }
-]
 
-export function AppSidebar() {
+export function AppSidebar({ id: tournamentId }: { id: string }) {
+  const { data: { tournament } = {} } = api.tournaments.getById.useQuery({ id: tournamentId });
+  const items = useMemo(() => {
+    return [
+      {
+        title: "Home",
+        url: `/tournaments/${tournamentId}`,
+        icon: Home,
+      },
+      {
+        title: "Participants",
+        url: `/tournaments/${tournamentId}/participants`,
+        icon: Users,
+      }
+    ]
+  }, [tournamentId])
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-md font-bold">{tournament?.name}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (

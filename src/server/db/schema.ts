@@ -71,7 +71,7 @@ export const matches = createTable("matches", {
   stageId: uuid("stage_id").references(() => tournamentStages.id),
   round: integer("round").notNull(),
   startTime: timestamp("start_time"),
-  winnerId: uuid("winner_id").references(() => tournamentAttendees.id),
+  winnerId: uuid("winner_id").references(() => tournamentAttendees.id, { onDelete: "set null" }),
   matchNumber: integer("match_number").notNull(),
   state: matchStatus("state").default("SCHEDULED").notNull(),
   nextMatchId: uuid("next_match_id").references((): AnyPgColumn => matches.id),
@@ -84,7 +84,7 @@ export const matchParticipantStatus = pgEnum(`${prefix}match_participant_status`
 export const matchParticipants = createTable("match_participants", {
   id: uuid("id").primaryKey().defaultRandom(),
   matchId: uuid("match_id").references(() => matches.id).notNull(),
-  tournamentAttendeeId: uuid("tournament_attendee_id").references(() => tournamentAttendees.id).notNull(),
+  tournamentAttendeeId: uuid("tournament_attendee_id").references(() => tournamentAttendees.id, { onDelete: "set null" }),
   resultText: text("result_text"),
   isWinner: boolean("is_winner"),
   status: matchParticipantStatus("status").default("SCHEDULED").notNull(),

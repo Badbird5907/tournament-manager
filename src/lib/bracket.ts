@@ -1,12 +1,11 @@
 import type { Match, MatchParticipant, TournamentAttendee, TournamentStage } from "@/types";
-import type React from "react";
-import type { MatchType, ParticipantType, SingleEliminationBracket } from "react-tournament-brackets";
+import type { MatchType } from "react-tournament-brackets";
 
 type MatchWithParticipants = Match & {
-  participants: (MatchParticipant & { attendee: TournamentAttendee & { isWinner: boolean | undefined} })[];
+  participants: (MatchParticipant & { attendee: (TournamentAttendee) | null } | null)[];
   winner: TournamentAttendee | null;
 }
-export const generateSingleEliminationBracket = (matches: MatchWithParticipants[], stage: TournamentStage): MatchType[] => {
+export const buildSingleEliminationBracket = (matches: MatchWithParticipants[], stage: TournamentStage): MatchType[] => {
   return matches.map((match) => {
     return {
         id: match.id,
@@ -16,6 +15,15 @@ export const generateSingleEliminationBracket = (matches: MatchWithParticipants[
         startTime: match.startTime?.toISOString() ?? "Start: TBD",
         state: match.state === "SCHEDULED" ? "SCHEDULED" : match.state,
         participants: match.participants.map((participant) => {
+          if (!participant?.attendee) {
+            return {
+              id: "unknown",
+              resultText: "TBD",
+              isWinner: false,
+              status: null,
+              name: "TBD",
+            };
+          }
           return {
             id: participant.attendee.id,
             resultText: participant.status === "SCHEDULED" ? "SCH" : participant.resultText,
@@ -27,7 +35,9 @@ export const generateSingleEliminationBracket = (matches: MatchWithParticipants[
       }
     })
 };
-
-export const generateDoubleEliminationBracket = (matches: MatchWithParticipants[], stage: TournamentStage): MatchType[] => {
+export const generateSingleEliminationBracket = (participants: TournamentAttendee[], tournamentId: string) => {
+  return [];
+}
+export const buildDoubleEliminationBracket = (matches: MatchWithParticipants[], stage: TournamentStage): MatchType[] => {
   return [];
 }
