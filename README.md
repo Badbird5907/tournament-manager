@@ -1,29 +1,15 @@
-# Create T3 App
+# Tournament Manager
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Tournament Manager is a Next.JS that allows users to create and manage tournaments.
+It currently supports creating single-elimination brackets.
+It is built with Next.JS, TypeScript, TailwindCSS, Drizzle, OpenAuth, and Supabase (PostgreSQL).
 
-## What's next? How do I make an app with this?
+Currently, generating single-elim brackets with an odd number of players (byes) is a bit buggy.
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Screenshots [WIP]
+![Bracket](https://hc-cdn.hel1.your-objectstorage.com/s/v3/04b41738718fb8edc002c7b4f602dff621be0652_download_filename_5367269d8ff7de5f942e_brave_z4zw7P47mi.png)
+![Another Bracket](https://hc-cdn.hel1.your-objectstorage.com/s/v3/d2d673ca5c15512611cdb8ba2ef6c4bfbc2f5377_download_filename_86038ecc39c926304840_brave_erR3HQoDYz.png)
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+![Participants](https://hc-cdn.hel1.your-objectstorage.com/s/v3/9db9502ba8c559844557c594718a5e53a12a82ed_download_filename_5b40ee68b2be8c870942_brave_mZY16mzM7m.png)
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
-
-## Learn More
-
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
-
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
-
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+![Management UI](https://hc-cdn.hel1.your-objectstorage.com/s/v3/f87677aa01047d09e3b2a4339a70071f3169b32b_download_filename_1b04b8e1057cec3754a5_brave_Mk8DVV8bMM.png)

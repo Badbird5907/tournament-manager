@@ -44,7 +44,7 @@ export const StageList = ({ id }: { id: string }) => {
                 <TableCell>{capitalizeDeep(stage.bracketType?.replace("_", " ") ?? "<UNKNOWN>")}</TableCell>
                 <TableCell>
                   <div className="flex flex-row gap-2">
-                    <Link href={`/tournaments/${id}/stages/${stage.id}`}>
+                    <Link href={`/tournaments/${id}/stage/${stage.id}`}>
                       <Button>
                         Edit
                       </Button>

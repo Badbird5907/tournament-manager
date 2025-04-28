@@ -67,15 +67,15 @@ export const tournamentAttendees = createTable("tournament_attendees", {
 export const matchStatus = pgEnum(`${prefix}match_status`, matchStatusEnum.options);
 export const matches = createTable("matches", {
   id: uuid("id").primaryKey().defaultRandom(),
-  tournamentId: uuid("tournament_id").references(() => tournaments.id),
-  stageId: uuid("stage_id").references(() => tournamentStages.id),
+  tournamentId: uuid("tournament_id").references(() => tournaments.id, { onDelete: "cascade" }),
+  stageId: uuid("stage_id").references(() => tournamentStages.id, { onDelete: "set null" }),
   round: integer("round").notNull(),
   startTime: timestamp("start_time"),
   winnerId: uuid("winner_id").references(() => tournamentAttendees.id, { onDelete: "set null" }),
   matchNumber: integer("match_number").notNull(),
   state: matchStatus("state").default("SCHEDULED").notNull(),
-  nextMatchId: uuid("next_match_id").references((): AnyPgColumn => matches.id),
-  nextLoserMatchId: uuid("next_loser_match_id").references((): AnyPgColumn => matches.id),
+  nextMatchId: uuid("next_match_id").references((): AnyPgColumn => matches.id, { onDelete: "set null" }),
+  nextLoserMatchId: uuid("next_loser_match_id").references((): AnyPgColumn => matches.id, { onDelete: "set null" }),
   bracketType: pgBracketType("bracket_type").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -83,8 +83,9 @@ export const matches = createTable("matches", {
 export const matchParticipantStatus = pgEnum(`${prefix}match_participant_status`, matchParticipantStatusEnum.options);
 export const matchParticipants = createTable("match_participants", {
   id: uuid("id").primaryKey().defaultRandom(),
-  matchId: uuid("match_id").references(() => matches.id).notNull(),
-  tournamentAttendeeId: uuid("tournament_attendee_id").references(() => tournamentAttendees.id, { onDelete: "set null" }),
+  matchId: uuid("match_id").references(() => matches.id, { onDelete: "cascade" }).notNull(),
+  stageId: uuid("stage_id").references(() => tournamentStages.id).notNull(),
+  tournamentAttendeeId: uuid("tournament_attendee_id").references(() => tournamentAttendees.id, { onDelete: "cascade" }).notNull(),
   resultText: text("result_text"),
   isWinner: boolean("is_winner"),
   status: matchParticipantStatus("status").default("SCHEDULED").notNull(),

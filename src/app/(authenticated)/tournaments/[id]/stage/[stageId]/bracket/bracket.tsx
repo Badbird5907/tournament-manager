@@ -3,6 +3,7 @@
 import { api } from "@/trpc/react";
 import { SingleEliminationBracket, Match, SVGViewer, createTheme } from 'react-tournament-brackets';
 import { useMemo } from "react";
+import { simpleBracket, walkOverData } from "@/app/(authenticated)/tournaments/[id]/stage/[stageId]/bracket/test";
 
 const customTheme = createTheme({
   textColor: { 
@@ -39,6 +40,7 @@ const customTheme = createTheme({
 
 export const Bracket = ({ id, stageId, parentRef }: { id: string; stageId: string; parentRef: React.RefObject<HTMLDivElement | null> }) => {
   const { data: bracketData } = api.tournaments.getBracket.useQuery({ tournamentId: id, stageId });
+  console.log(JSON.stringify(bracketData, null, 2));
   const { width, height } = useMemo(() => {
     let width = parentRef?.current?.clientWidth ?? 32;
     if (width < 128) {
@@ -51,11 +53,14 @@ export const Bracket = ({ id, stageId, parentRef }: { id: string; stageId: strin
     return { width, height };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parentRef, parentRef?.current, parentRef?.current?.clientWidth, parentRef?.current?.clientHeight]);
-  console.log(parentRef);
   if (!bracketData || !parentRef) {
     return <div className="w-full h-full flex items-center justify-center">Loading bracket...</div>;
   }
-  console.log(width, height);
+  if (bracketData.length === 0) {
+    return <div className="w-full h-full flex items-center justify-center">
+      The bracket has not been generated yet!
+    </div>;
+  }
   return (
     <div className="w-full min-h-screen h-full flex">
       <SingleEliminationBracket
